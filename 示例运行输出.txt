@@ -1,0 +1,49 @@
+python -m examples.minimal
+exit=0
+你好，小明！
+
+
+python -m examples.message_memory
+exit=0
+[('human', '我叫小明'), ('ai', '已收到：我叫小明'), ('human', '第二轮'), ('ai', '已收到：第二轮')]
+消息数： 4
+
+
+python -m examples.tool_loop
+exit=0
+human '演示 6 × 7 的工具调用过程'
+ai '' [{'name': 'multiply', 'args': {'a': 6, 'b': 7}, 'id': 'call-demo-1', 'type': 'tool_call'}]
+tool '42'
+ai '工具返回：42' []
+
+
+python -m examples.context_demo
+exit=0
+{'name': '小明', 'greeting': 'u-001：你好，小明'}
+
+
+python -m examples.parallel
+exit=0
+1. 第一章：状态
+2. 第二章：持久化
+3. 第三章：人工介入
+
+
+python -m examples.retries
+exit=0
+{'query': '测试请求', 'answer': '完成：测试请求'}
+总尝试次数： 3
+
+
+python -m examples.streaming
+exit=0
+custom {'stage': 'started'}
+updates {'work': {'value': 1}}
+
+
+python -m examples.document_workflow
+exit=0
+自动路径： {'report': '- L1: LangGraph 编排有状态流程。\n- L2: Checkpointer 保存运行状态。', 'status': 'auto_approved'}
+暂停： {'draft': '- L1: 需要审核的短文。', 'question': '是否批准？可提供修订稿。'}
+批准： {'report': '- L1: 需要审核的短文。', 'status': 'human_approved'}
+拒绝： {'report': '', 'status': 'rejected'}

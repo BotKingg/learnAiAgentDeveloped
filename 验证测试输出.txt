@@ -1,0 +1,40 @@
+test_approval_requires_boolean (test_learning.Approval.test_approval_requires_boolean) ... ok
+test_approve (test_learning.Approval.test_approve) ... ok
+test_interrupt_restarts_the_node (test_learning.Approval.test_interrupt_restarts_the_node) ... ok
+test_pause_has_no_publish_receipt (test_learning.Approval.test_pause_has_no_publish_receipt) ... ok
+test_reject (test_learning.Approval.test_reject) ... ok
+test_sqlite_resume_in_separate_python_process (test_learning.Approval.test_sqlite_resume_in_separate_python_process) ... ok
+test_ainvoke (test_learning.Basics.test_ainvoke) ... ok
+test_concurrent_write_without_reducer_raises (test_learning.Basics.test_concurrent_write_without_reducer_raises) ... ok
+test_direct_chat_model_is_not_state_adapter (test_learning.Basics.test_direct_chat_model_is_not_state_adapter) ... ok
+test_empty_name_rejected (test_learning.Basics.test_empty_name_rejected) ... ok
+test_greeting_and_partial_update (test_learning.Basics.test_greeting_and_partial_update) ... ok
+test_message_id_update (test_learning.Basics.test_message_id_update) ... ok
+test_new_memory_saver_has_no_previous_checkpoints (test_learning.Basics.test_new_memory_saver_has_no_previous_checkpoints) ... ok
+test_remove_message (test_learning.Basics.test_remove_message) ... ok
+test_runtime_context (test_learning.Basics.test_runtime_context) ... ok
+test_threads_accumulate_and_isolate (test_learning.Basics.test_threads_accumulate_and_isolate) ... ok
+test_typeddict_does_not_supply_missing_value (test_learning.Basics.test_typeddict_does_not_supply_missing_value) ... ok
+test_auto_approval (test_learning.DocumentWorkflow.test_auto_approval) ... ok
+test_empty_document_rejected (test_learning.DocumentWorkflow.test_empty_document_rejected) ... ok
+test_fabricated_evidence_rejected (test_learning.DocumentWorkflow.test_fabricated_evidence_rejected) ... ok
+test_manual_correction (test_learning.DocumentWorkflow.test_manual_correction) ... ok
+test_manual_rejection (test_learning.DocumentWorkflow.test_manual_rejection) ... ok
+test_output_schema_filters_output_but_not_checkpoint (test_learning.DocumentWorkflow.test_output_schema_filters_output_but_not_checkpoint) ... ok
+test_string_boolean_rejected (test_learning.DocumentWorkflow.test_string_boolean_rejected) ... ok
+test_experimental_v3_state_projection (test_learning.ParallelAndStreaming.test_experimental_v3_state_projection) ... ok
+test_parallel_collects_all_results_in_source_order (test_learning.ParallelAndStreaming.test_parallel_collects_all_results_in_source_order) ... ok
+test_parallel_empty_input (test_learning.ParallelAndStreaming.test_parallel_empty_input) ... ok
+test_stream_v2_custom_and_updates (test_learning.ParallelAndStreaming.test_stream_v2_custom_and_updates) ... ok
+test_create_agent_factory_with_scripted_tool_model (test_learning.ToolsAndFailures.test_create_agent_factory_with_scripted_tool_model) ... ok
+test_non_retryable_error_is_not_retried (test_learning.ToolsAndFailures.test_non_retryable_error_is_not_retried) ... ok
+test_recursion_limit_stops_loop (test_learning.ToolsAndFailures.test_recursion_limit_stops_loop) ... ok
+test_retry_exhausts_after_three_total_attempts (test_learning.ToolsAndFailures.test_retry_exhausts_after_three_total_attempts) ... ok
+test_retry_succeeds_on_third_total_attempt (test_learning.ToolsAndFailures.test_retry_succeeds_on_third_total_attempt) ... ok
+test_tool_loop_and_correlation_id (test_learning.ToolsAndFailures.test_tool_loop_and_correlation_id) ... ok
+test_tool_rejects_out_of_range (test_learning.ToolsAndFailures.test_tool_rejects_out_of_range) ... ok
+
+----------------------------------------------------------------------
+Ran 35 tests in 4.163s
+
+OK

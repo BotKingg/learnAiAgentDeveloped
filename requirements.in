@@ -1,0 +1,5 @@
+# 直接依赖；完整的已测解析结果在 requirements.lock.txt。
+langgraph==1.2.16
+langchain==1.4.6
+langgraph-checkpoint-sqlite==3.1.2
+langchain-openai==1.7.2

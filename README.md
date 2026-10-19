@@ -10,6 +10,31 @@ LangGraph 中文学习指南与实验代码。建议先运行无需 API Key 的�
 - `tests/test_learning.py`：35 项离线测试；其中包含对预期错误行为的验证，不代表运行时无条件容错。
 - `requirements.in`：直接依赖；`requirements.lock.txt`：完整锁定版本与 SHA256 哈希。
 
+## 详细注释版代码入口
+
+每份示例都包含：运行命令、学习目标、执行路径、预期结果、字段解释、函数讲解、关键语句注释和动手练习。建议先读文件顶部，再看数据结构和函数，最后读主入口，按实际调用顺序回头跟踪节点。
+
+| 顺序 | 带详细中文注释的源码 | 重点阅读 |
+| --- | --- | --- |
+| 1 | [minimal.py](examples/minimal.py) | TypedDict、局部变量、部分更新、构建和执行的区别 |
+| 2 | [message_memory.py](examples/message_memory.py) | 消息 reducer、新增消息、thread_id、内存持久化边界 |
+| 3 | [tool_loop.py](examples/tool_loop.py) | 工具 schema、调用 ID、ToolMessage、条件路由与循环终止 |
+| 4 | [context_demo.py](examples/context_demo.py) | State、Runtime context、执行 config 的职责 |
+| 5 | [approval.py](examples/approval.py) | 中断重放、Command、SQLite、命令行参数和跨进程恢复 |
+| 6 | [parallel.py](examples/parallel.py) | Send、worker 输入、reducer、空输入、排序和并发度 |
+| 7 | [retries.py](examples/retries.py) | 可调用对象、故障注入、异常类型和重试总次数 |
+| 8 | [streaming.py](examples/streaming.py) | writer、自定义进度、状态更新和 v2 StreamPart |
+| 9 | [document_workflow.py](examples/document_workflow.py) | Pydantic、短路校验、证据行号、人工修订和输出 schema |
+| 10 | [real_agent.py](examples/real_agent.py) | 模型依赖注入、create_agent、环境配置和真实调用边界 |
+
+[测试文件也有逐项中文讲解](tests/test_learning.py)：每项说明准备条件、执行动作、预期结果，以及错误行为为什么必须被识别。你可以把注释里的预期先遮住，写出自己的预测，再运行对应测试验证。
+
+已经克隆过仓库时，在本地仓库的 main 分支拉取本版：
+
+```bash
+git pull --ff-only origin main
+```
+
 ## 快速运行
 
 先克隆仓库，然后在仓库根目录执行。建议使用 Python 3.12：

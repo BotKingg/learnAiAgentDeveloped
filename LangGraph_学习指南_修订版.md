@@ -6,6 +6,8 @@
 
 目标是完成一个能保留证据、人工审核、暂停恢复的文档处理工作流，并能说明它为什么这么执行。主线实验不需要 API Key；真实模型是后续可选实验。
 
+示例源码与正文代码块已补充详细中文注释：先读文件顶部的运行方式和执行路径，再看状态字段、节点返回值与主入口。测试中的每项断言也配有目的说明。
+
 配套文件见同目录的 `examples/`、`tests/`。克隆本仓库后，在仓库根目录执行命令；离线压缩包也可在解压后的根目录执行。原文的逐条问题与官方依据见 [原文审阅与修改说明](原文审阅与修改说明.md)。
 
 ## 阅读导航
@@ -97,8 +99,10 @@ Windows 命令供使用方式参考；本次实际执行平台是 Linux，不将
 查看版本使用包元数据，而不是假定模块都有 `__version__`：
 
 ```python
+# version 读取已安装发行包的元数据，不要求模块暴露 __version__。
 from importlib.metadata import version
 
+# 参数是包的发行名称；环境里未安装对应包时会抛 PackageNotFoundError。
 print("langgraph", version("langgraph"))
 print("langchain", version("langchain"))
 ```
@@ -110,33 +114,102 @@ print("langchain", version("langchain"))
 运行 `python -m examples.minimal`。下面是该文件的完整内容：
 
 ```python
-"""运行：python -m examples.minimal"""
+"""
+实验 1：看懂“输入状态 → 节点返回更新 → 最终状态”。
+
+在仓库根目录运行：
+    python -m examples.minimal
+
+不需要 API Key，也不会调用网络或模型。
+执行路径：
+    START → greet → END
+预期终端输出：
+    你好，小明！
+
+先预测：输入里只有 name，为什么输出里还会多出 greeting？
+再观察：greet 只返回 greeting，为什么原来的 name 没有消失？
+这两个问题就是本实验要掌握的“部分更新”语义。
+"""
+
+# TypedDict 用来向读者、IDE 和类型检查器说明字典应该有哪些字段。
+# 它不是自动填默认值的表单，也不会在这里完成完整的运行时输入校验。
 from typing import TypedDict
+
+# StateGraph 是图的构建器；START、END 是框架的入口和结束标记。
+# 它们不是需要你实现的业务函数。
 from langgraph.graph import END, START, StateGraph
 
 
 class State(TypedDict):
+    """描述这个图可能读取或产生的业务字段，不负责创建字段的初始值。"""
+
+    # 调用者提供的姓名。代码读取 state["name"]，所以运行时必须先有它。
     name: str
+
+    # greet 节点产生的问候语；首次输入可以不含它，因为节点会写入它。
     greeting: str
 
 
 def greet(state: State) -> dict:
+    """读取姓名，检查空白输入，返回只包含 greeting 的状态更新。
+
+    输入示例：{"name": " 小明 "}
+    返回更新：{"greeting": "你好，小明！"}
+
+    注意：这里返回的字典是更新量，不是图的完整最终状态。
+    name 的更新规则是默认覆盖，但本节点根本没有提交 name 的新值。
+    因此最终状态里的 name 仍是原始的 " 小明 "，两侧空格仍然存在。
+    """
+
+    # ["name"] 按键取值；缺少这个键时会抛出 KeyError，而不会自动得到 ""。
+    # strip() 返回清理两侧空白后的新字符串，原字符串不会被原地修改。
+    # 这里的局部变量 name 与状态字典中的 name 字段要分开理解。
     name = state["name"].strip()
+
+    # 空字符串在 Python 的条件判断中为 False；not name 因而为 True。
+    # 提前抛出具体错误，能避免生成一条看似正常、实际缺少姓名的问候。
     if not name:
         raise ValueError("name 不能为空")
+
+    # 只提交本节点真正产生的 greeting。
+    # LangGraph 会按字段规则合并更新，保留没有在这个更新里出现的字段。
     return {"greeting": f"你好，{name}！"}
 
 
 def build_graph():
+    """创建并编译图，但此时不会执行 greet，也不会生成任何问候语。"""
+
+    # 第一步：声明状态 schema，得到可以添加节点和边的构建器。
     builder = StateGraph(State)
+
+    # 第二步：把节点名称 "greet" 与函数对象 greet 绑定。
+    # 这里写 greet，不写 greet(...)：函数要等图真正运行时才被调用。
     builder.add_node("greet", greet)
+
+    # 第三步：明确执行顺序。START 使 greet 成为入口节点。
     builder.add_edge(START, "greet")
+
+    # greet 完成后走到 END，本次图执行结束，不再调度其他业务节点。
     builder.add_edge("greet", END)
+
+    # 第四步：编译成可执行对象。compile() 本身不等于运行。
+    # 调用者拿到这个对象后，可以使用 invoke、stream、ainvoke 等接口。
     return builder.compile()
 
 
+# 只有“作为模块入口运行”时才执行下面的演示。
+# tests 导入本文件的 build_graph 时，不会顺便打印问候语。
 if __name__ == "__main__":
+    # 从内往外理解这一行：
+    # 1. build_graph() 得到可执行图；
+    # 2. invoke({...}) 提交初始输入并等待本次运行结束；
+    # 3. ["greeting"] 从最终状态中取出问候语；
+    # 4. print(...) 把它显示到终端。
+    # 输入没有 greeting 是有意的：它会由 greet 节点生成。
     print(build_graph().invoke({"name": " 小明 "})["greeting"])
+
+# 练习：先预测 invoke 的完整返回字典，再自己打印它验证。
+# 然后加入 normalize 节点，让 name 的去空白结果真正写回状态。
 ```
 
 预期输出：`你好，小明！`。
@@ -150,13 +223,21 @@ if __name__ == "__main__":
 ## 5. Reducer：先决定字段的含义，再决定怎么合并
 
 ```python
+# operator.add 是一个可调用函数，对两个列表执行拼接。
 import operator
 from typing import Annotated, TypedDict
 
+# 这里只声明 schema，还没有创建图、填充字段或执行任何节点。
 class State(TypedDict):
-    answer: str                         # 新答案替换旧答案
-    attempts: int                       # 需要显式更新数值
-    findings: Annotated[list[str], operator.add]  # 收集本任务多个步骤的发现
+    # 没有 reducer 的普通字段，本次更新会覆盖旧值。
+    answer: str
+
+    # int 类型不代表框架自动累加；计数仍需节点显式返回新值或另配 reducer。
+    attempts: int
+
+    # Annotated 的第一个参数是字段类型，第二个参数是合并函数。
+    # 各节点每次只返回新增 findings；框架用 old_list + new_list 合并。
+    findings: Annotated[list[str], operator.add]
 ```
 
 字段的合并规则是逐字段的。嵌套字典也不会默认递归合并：返回一份新的 `user` 通常会替换整个 user 字段。
@@ -184,9 +265,17 @@ Reducer 应尽量纯净、可预测，并考虑重复值、合并顺序及重放
 from langchain_core.messages import HumanMessage, RemoveMessage
 from langgraph.graph import add_messages
 
+# 先创建一条带稳定 ID 的用户消息，作为旧列表。
 messages = [HumanMessage(content="你好", id="u1")]
+
+# 新消息沿用 u1，所以更新旧记录；不同 ID 才会作为另一条消息追加。
 messages = add_messages(messages, [HumanMessage(content="修订后的问题", id="u1")])
+
+# assert 是立即检查的断言：条件不满足会抛 AssertionError。
+# 这里长度仍为 1，说明没有把同 ID 修订消息追加成第二条。
 assert len(messages) == 1
+
+# 显式删除指令按 ID 定位。仅返回一个截短列表，不具有相同删除语义。
 messages = add_messages(messages, [RemoveMessage(id="u1")])
 assert messages == []
 ```
@@ -215,25 +304,72 @@ flowchart LR
 运行 `python -m examples.tool_loop`。这里故意使用固定脚本模拟模型，因此每次都请求计算 6×7；不要用它回答任意计算问题。
 
 ```python
-"""运行：python -m examples.tool_loop。模型节点是固定脚本，不会理解任意问题。"""
+"""
+实验 3：逐条看懂模型请求工具、工具执行和最终回复之间的协议。
+
+运行：
+    python -m examples.tool_loop
+
+完整路径：
+    START → model → tools → model → END
+
+这里的 model 是固定脚本：先请求 multiply(6, 7)，收到 ToolMessage 后结束。
+它不理解任意问题，也不访问真实模型。这样能把工具协议稳定地展示出来。
+预期消息顺序：
+    HumanMessage → AIMessage(tool_calls) → ToolMessage("42") → AIMessage
+
+重点看 tool_calls 中的 id 与 ToolMessage.tool_call_id 如何对应。
+"""
+
+# AIMessage 表示助手消息，既可能是最终文本，也可能携带工具请求。
+# ToolMessage 表示工具执行结果，用 tool_call_id 关联先前的请求。
 from langchain_core.messages import AIMessage, ToolMessage
+
+# @tool 将函数包装成工具；函数签名生成参数 schema，文档字符串提供描述。
+# 因此下面 multiply 的短文档字符串会成为工具元数据，保留其原有内容。
 from langchain_core.tools import tool
+
 from langgraph.graph import END, START, MessagesState, StateGraph
+
+# ToolNode 负责读取并执行请求；tools_condition 负责检查是否还有工具请求。
+# 分工不同：绑定或声明一个工具，并不等于已经执行了它。
 from langgraph.prebuilt import ToolNode, tools_condition
 
 
 @tool
 def multiply(a: int, b: int) -> int:
     """将两个绝对值不超过一百万的整数相乘。"""
+
+    # a、b 的类型声明进入工具的参数 schema；实际包装层会解析和校验输入。
+    # 不应把类型提示本身误当成所有业务限制已经自动完成。
+    # 绝对值上限是我们亲自写出的业务规则，负数也按绝对值检查。
     if abs(a) > 1_000_000 or abs(b) > 1_000_000:
         raise ValueError("参数超出教学示例允许范围")
+
+    # 只执行这一种确定的运算，不接收任意 Python 表达式，也不用 eval。
     return a * b
 
 
 def scripted_model(state: MessagesState) -> dict:
+    """模拟模型的两种输出：请求一次工具，或者根据工具结果给出最终回复。"""
+
+    # 每次进入模型节点，都查看当前最后一条消息。
+    # 第一次是用户消息；经过 tools 节点后，最后一条会变成 ToolMessage。
     last = state["messages"][-1]
+
+    # isinstance 判断最后一条是否已经是工具结果。
+    # 走到这里时，不再发起新工具调用，所以稍后的条件路由会选择 END。
     if isinstance(last, ToolMessage):
         return {"messages": [AIMessage(content=f"工具返回：{last.content}")]}
+
+    # 第一次进入时，构造一条“请求执行工具”的助手消息。
+    # content 为空并不代表什么都没有发生：信息在 tool_calls 字段中。
+    # 字段逐个看：
+    # - name：需要执行的工具名，与 @tool 包装后的 multiply 名称对应；
+    # - args：工具输入字典，键名必须与参数 schema 对应；
+    # - id：本次调用请求的关联标识，工具结果会用同一个值回应；
+    # - type：说明这是已经解析好的 tool_call 结构。
+    # 固定 id 只用于这个不持久化、单次调用的演示；真实调用应使用唯一 ID。
     return {"messages": [AIMessage(content="", tool_calls=[{
         "name": "multiply", "args": {"a": 6, "b": 7},
         "id": "call-demo-1", "type": "tool_call",
@@ -241,22 +377,49 @@ def scripted_model(state: MessagesState) -> dict:
 
 
 def build_graph():
+    """搭建工具循环；决定何时终止的是条件路由，不是固定循环次数。"""
+
     builder = StateGraph(MessagesState)
+
+    # 同一个 model 节点会执行两次，但两次读取的最后一条消息不同。
     builder.add_node("model", scripted_model)
+
+    # 这里只注册执行层真正允许的工具。模型无法凭空执行任意 Python 函数。
+    # ToolNode 会执行请求，并产生关联到原请求 ID 的 ToolMessage。
     builder.add_node("tools", ToolNode([multiply]))
+
+    # 首次先运行 model，让它决定是否需要工具。
     builder.add_edge(START, "model")
+
+    # tools_condition 检查最后一条 AIMessage 是否包含 tool_calls：
+    # 有则返回 "tools"，没有则返回 END。
+    # 它默认使用节点名 "tools"；若改节点名，需要相应配置路由映射。
     builder.add_conditional_edges("model", tools_condition)
+
+    # 工具结果不直接作为最终回复，而是回到 model，让其读取结果再决定下一步。
     builder.add_edge("tools", "model")
     return builder.compile()
 
 
 if __name__ == "__main__":
+    # 新建图没有接入 checkpointer，每次 invoke 是独立的本次输入流程。
     result = build_graph().invoke(
         {"messages": [("human", "演示 6 × 7 的工具调用过程")]},
+
+        # recursion_limit 限制图的执行步数，用于阻止失控循环。
+        # 它不是模型 token、调用费用或精确工具次数的预算。
         config={"recursion_limit": 10},
     )
+
+    # 打印完整消息轨迹，不能只看最后一句“42”就推断工具一定执行过。
     for message in result["messages"]:
+        # repr 能让空字符串显示成 ''，便于观察工具请求的 content 是空的。
+        # getattr(..., "") 在消息没有 tool_calls 属性时返回空字符串，
+        # 避免在 HumanMessage / ToolMessage 上直接读该属性而出错。
         print(message.type, repr(message.content), getattr(message, "tool_calls", ""))
+
+# 练习：先把 recursion_limit 改成 1，理解为何会提前超限。
+# 再把脚本请求的 a 改成超出范围的值，观察工具失败如何呈现。
 ```
 
 你应看到：HumanMessage → 带 tool_calls 的 AIMessage → 内容为 42 的 ToolMessage → 普通 AIMessage。
@@ -273,9 +436,18 @@ if __name__ == "__main__":
 from langgraph.graph import MessagesState
 
 def make_model_node(model_with_tools):
+    """接收已初始化并绑定工具的模型，返回一个适合 StateGraph 的节点函数。"""
+
+    # 外层函数只创建适配函数，不在这里发起模型请求。
+    # 内层函数用闭包保留 model_with_tools，图真正执行节点时才调用它。
     def call_model(state: MessagesState) -> dict:
+        # 模型通常接收消息列表等输入类型，不是整份状态 dict。
         response = model_with_tools.invoke(state["messages"])
+
+        # 把模型返回的 AIMessage 包装成状态更新，交给消息 reducer 合并。
         return {"messages": [response]}
+
+    # 返回函数对象，不写 call_model(...)，避免在注册前错误执行节点。
     return call_model
 ```
 
@@ -334,10 +506,18 @@ from examples.approval import build_graph
 from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.types import Command
 
+# 这段演示必须在同一进程里完成；跨进程请使用 approval.py 的 SQLite CLI。
 app = build_graph(InMemorySaver())
 config = {"configurable": {"thread_id": "approval-local"}}
+
+# 首次提交初始状态，图会运行到 review 的 interrupt 并暂停。
 paused = app.invoke({"request_id": "r1", "draft": "待审批的草稿"}, config)
+
+# __interrupt__ 是框架返回的中断列表；[0].value 是第一个中断的载荷。
 print(paused["__interrupt__"][0].value)
+
+# 同一 app、同一 thread：传入恢复命令，不重新提交一份新任务输入。
+# approved 使用真正的 bool；恢复会从 review 节点开头重跑。
 completed = app.invoke(Command(resume={"approved": True}), config)
 print(completed["receipt"])
 ```
@@ -396,13 +576,16 @@ flowchart LR
 ```python
 from langgraph.types import RetryPolicy
 
+# 这是重试配置对象；创建它本身不会运行节点，也不会发起网络请求。
 policy = RetryPolicy(
-    max_attempts=3,        # 包括首次，总共最多 3 次
-    retry_on=TimeoutError,
-    initial_interval=0.5,
-    backoff_factor=2.0,
-    jitter=True,
+    max_attempts=3,        # 包括首次，总共最多 3 次，即最多再尝试 2 次。
+    retry_on=TimeoutError, # 仅匹配所选异常；真实 SDK 可能使用自己的超时异常类。
+    initial_interval=0.5,  # 第一次重试前的基础等待秒数。
+    backoff_factor=2.0,    # 后续等待按倍数增长，不是每次都固定等待。
+    jitter=True,          # 对退避等待加入随机扰动，降低大量请求同时重试的竞争。
 )
+
+# 完整图中，把策略绑定到需要它的具体节点；下方是用法片段而非独立程序：
 # builder.add_node("request", request_node, retry_policy=policy)
 ```
 
@@ -441,9 +624,12 @@ policy = RetryPolicy(
 ```python
 from examples.streaming import build_graph
 
+# 显式消费迭代器，观察自定义事件和状态更新两类输出。
 for part in build_graph().stream(
     {"value": 0}, stream_mode=["updates", "custom"], version="v2",
 ):
+    # type 告诉消费者这是哪种事件，data 才是该类别对应的实际内容。
+    # v2 使用统一 StreamPart 结构，避免默认 v1 多种返回形状混用。
     print(part["type"], part["data"])
 ```
 
@@ -456,9 +642,15 @@ for part in build_graph().stream(
 ```python
 from examples.minimal import build_graph
 
+# 这是当前锁定版本仍标记为实验性的 v3 事件流，运行会有对应警告。
+# 它与 stream(..., version="v2") 的统一返回包装是不同 API。
 run = build_graph().stream_events({"name": "小明"}, version="v3")
+
+# 消费 values 投影，将图推进到完成，并逐步读取状态快照。
 for snapshot in run.values:
     print(snapshot)
+
+# 消费完成后读取最终输出；创建 run 对象本身不代表任务已经结束。
 print(run.output)
 ```
 

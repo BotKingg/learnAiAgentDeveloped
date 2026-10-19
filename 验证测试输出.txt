@@ -1,40 +1,75 @@
-test_approval_requires_boolean (test_learning.Approval.test_approval_requires_boolean) ... ok
-test_approve (test_learning.Approval.test_approve) ... ok
-test_interrupt_restarts_the_node (test_learning.Approval.test_interrupt_restarts_the_node) ... ok
-test_pause_has_no_publish_receipt (test_learning.Approval.test_pause_has_no_publish_receipt) ... ok
-test_reject (test_learning.Approval.test_reject) ... ok
-test_sqlite_resume_in_separate_python_process (test_learning.Approval.test_sqlite_resume_in_separate_python_process) ... ok
-test_ainvoke (test_learning.Basics.test_ainvoke) ... ok
-test_concurrent_write_without_reducer_raises (test_learning.Basics.test_concurrent_write_without_reducer_raises) ... ok
-test_direct_chat_model_is_not_state_adapter (test_learning.Basics.test_direct_chat_model_is_not_state_adapter) ... ok
-test_empty_name_rejected (test_learning.Basics.test_empty_name_rejected) ... ok
-test_greeting_and_partial_update (test_learning.Basics.test_greeting_and_partial_update) ... ok
-test_message_id_update (test_learning.Basics.test_message_id_update) ... ok
-test_new_memory_saver_has_no_previous_checkpoints (test_learning.Basics.test_new_memory_saver_has_no_previous_checkpoints) ... ok
-test_remove_message (test_learning.Basics.test_remove_message) ... ok
-test_runtime_context (test_learning.Basics.test_runtime_context) ... ok
-test_threads_accumulate_and_isolate (test_learning.Basics.test_threads_accumulate_and_isolate) ... ok
-test_typeddict_does_not_supply_missing_value (test_learning.Basics.test_typeddict_does_not_supply_missing_value) ... ok
-test_auto_approval (test_learning.DocumentWorkflow.test_auto_approval) ... ok
-test_empty_document_rejected (test_learning.DocumentWorkflow.test_empty_document_rejected) ... ok
-test_fabricated_evidence_rejected (test_learning.DocumentWorkflow.test_fabricated_evidence_rejected) ... ok
-test_manual_correction (test_learning.DocumentWorkflow.test_manual_correction) ... ok
-test_manual_rejection (test_learning.DocumentWorkflow.test_manual_rejection) ... ok
-test_output_schema_filters_output_but_not_checkpoint (test_learning.DocumentWorkflow.test_output_schema_filters_output_but_not_checkpoint) ... ok
-test_string_boolean_rejected (test_learning.DocumentWorkflow.test_string_boolean_rejected) ... ok
-test_experimental_v3_state_projection (test_learning.ParallelAndStreaming.test_experimental_v3_state_projection) ... ok
-test_parallel_collects_all_results_in_source_order (test_learning.ParallelAndStreaming.test_parallel_collects_all_results_in_source_order) ... ok
-test_parallel_empty_input (test_learning.ParallelAndStreaming.test_parallel_empty_input) ... ok
-test_stream_v2_custom_and_updates (test_learning.ParallelAndStreaming.test_stream_v2_custom_and_updates) ... ok
-test_create_agent_factory_with_scripted_tool_model (test_learning.ToolsAndFailures.test_create_agent_factory_with_scripted_tool_model) ... ok
-test_non_retryable_error_is_not_retried (test_learning.ToolsAndFailures.test_non_retryable_error_is_not_retried) ... ok
-test_recursion_limit_stops_loop (test_learning.ToolsAndFailures.test_recursion_limit_stops_loop) ... ok
-test_retry_exhausts_after_three_total_attempts (test_learning.ToolsAndFailures.test_retry_exhausts_after_three_total_attempts) ... ok
-test_retry_succeeds_on_third_total_attempt (test_learning.ToolsAndFailures.test_retry_succeeds_on_third_total_attempt) ... ok
-test_tool_loop_and_correlation_id (test_learning.ToolsAndFailures.test_tool_loop_and_correlation_id) ... ok
-test_tool_rejects_out_of_range (test_learning.ToolsAndFailures.test_tool_rejects_out_of_range) ... ok
+test_approval_requires_boolean (test_learning.Approval.test_approval_requires_boolean)
+字符串 "false" 不能被当作合格的审批结果。 ... ok
+test_approve (test_learning.Approval.test_approve)
+恢复值为真正的 True 时，选择 publish 分支。 ... ok
+test_interrupt_restarts_the_node (test_learning.Approval.test_interrupt_restarts_the_node)
+用测试探针证明恢复时节点从头执行。 ... ok
+test_pause_has_no_publish_receipt (test_learning.Approval.test_pause_has_no_publish_receipt)
+第一次运行应暂停，且尚未产生发布成功回执。 ... ok
+test_reject (test_learning.Approval.test_reject)
+恢复值为 False 时，必须选择 cancel。 ... ok
+test_sqlite_resume_in_separate_python_process (test_learning.Approval.test_sqlite_resume_in_separate_python_process)
+用真正独立的 Python 进程验证磁盘持久化与重复恢复检查。 ... ok
+test_ainvoke (test_learning.Basics.test_ainvoke)
+异步调用应返回与同步示例相符的业务结果。 ... ok
+test_concurrent_write_without_reducer_raises (test_learning.Basics.test_concurrent_write_without_reducer_raises)
+同一步两个节点写一个普通字段，应识别更新冲突。 ... ok
+test_direct_chat_model_is_not_state_adapter (test_learning.Basics.test_direct_chat_model_is_not_state_adapter)
+复现把 Chat Model 直接当状态适配器的常见错误。 ... ok
+test_empty_name_rejected (test_learning.Basics.test_empty_name_rejected)
+只包含空白的姓名应在 greet 中被明确拒绝。 ... ok
+test_greeting_and_partial_update (test_learning.Basics.test_greeting_and_partial_update)
+验证问候语被生成，同时未被更新的 name 保留原值。 ... ok
+test_message_id_update (test_learning.Basics.test_message_id_update)
+相同消息 ID 应更新原记录，而不是追加成两条。 ... ok
+test_new_memory_saver_has_no_previous_checkpoints (test_learning.Basics.test_new_memory_saver_has_no_previous_checkpoints)
+新建内存 saver，不能恢复旧 saver 中的检查点。 ... ok
+test_remove_message (test_learning.Basics.test_remove_message)
+用明确的 RemoveMessage 指令删除指定 ID 的消息。 ... ok
+test_runtime_context (test_learning.Basics.test_runtime_context)
+运行时 context 应被框架注入节点，并参与生成问候。 ... ok
+test_threads_accumulate_and_isolate (test_learning.Basics.test_threads_accumulate_and_isolate)
+同一图中，a 的两轮累积，b 的首轮独立。 ... ok
+test_typeddict_does_not_supply_missing_value (test_learning.Basics.test_typeddict_does_not_supply_missing_value)
+证明 TypedDict 不会自动填出缺失的 name。 ... ok
+test_auto_approval (test_learning.DocumentWorkflow.test_auto_approval)
+两行有效内容且不强制审核，应沿自动路径完成。 ... ok
+test_empty_document_rejected (test_learning.DocumentWorkflow.test_empty_document_rejected)
+纯空白文档必须被拒绝，不能进入假成功流程。 ... ok
+test_fabricated_evidence_rejected (test_learning.DocumentWorkflow.test_fabricated_evidence_rejected)
+分别检查“引文伪造”和“行号越界”两类问题。 ... ok
+test_manual_correction (test_learning.DocumentWorkflow.test_manual_correction)
+人工批准时提供修订稿，最终必须保留修订稿。 ... ok
+test_manual_rejection (test_learning.DocumentWorkflow.test_manual_rejection)
+人工拒绝后应有明确拒绝状态，并清空最终报告。 ... ok
+test_output_schema_filters_output_but_not_checkpoint (test_learning.DocumentWorkflow.test_output_schema_filters_output_but_not_checkpoint)
+证明输出 schema 筛选不等于内部数据保密。 ... ok
+test_string_boolean_rejected (test_learning.DocumentWorkflow.test_string_boolean_rejected)
+force_review="false" 应被 StrictBool 拒绝。 ... ok
+test_experimental_v3_state_projection (test_learning.ParallelAndStreaming.test_experimental_v3_state_projection)
+验证当前锁定版本的实验性 v3 能产生最终状态。 ... ok
+test_parallel_collects_all_results_in_source_order (test_learning.ParallelAndStreaming.test_parallel_collects_all_results_in_source_order)
+三个 worker 的结果必须全部保留，最终报告按原章节顺序显示。 ... ok
+test_parallel_empty_input (test_learning.ParallelAndStreaming.test_parallel_empty_input)
+空章节列表也应能正常结束并产生空报告。 ... ok
+test_stream_v2_custom_and_updates (test_learning.ParallelAndStreaming.test_stream_v2_custom_and_updates)
+消费者应能区分自定义进度和节点状态更新。 ... ok
+test_create_agent_factory_with_scripted_tool_model (test_learning.ToolsAndFailures.test_create_agent_factory_with_scripted_tool_model)
+用离线模型验证 create_agent 也能完成相同工具协议。 ... ok
+test_non_retryable_error_is_not_retried (test_learning.ToolsAndFailures.test_non_retryable_error_is_not_retried)
+ValueError 不属于本例选择的 TimeoutError 重试范围。 ... ok
+test_recursion_limit_stops_loop (test_learning.ToolsAndFailures.test_recursion_limit_stops_loop)
+图预算不足时，工具循环应明确抛出步数超限错误。 ... ok
+test_retry_exhausts_after_three_total_attempts (test_learning.ToolsAndFailures.test_retry_exhausts_after_three_total_attempts)
+持续超时不能无限重试，达到总上限后应把错误抛出来。 ... ok
+test_retry_succeeds_on_third_total_attempt (test_learning.ToolsAndFailures.test_retry_succeeds_on_third_total_attempt)
+前两次临时失败，第三次应成功，总尝试次数恰好为 3。 ... ok
+test_tool_loop_and_correlation_id (test_learning.ToolsAndFailures.test_tool_loop_and_correlation_id)
+验证工具确实执行，并与原工具请求正确关联。 ... ok
+test_tool_rejects_out_of_range (test_learning.ToolsAndFailures.test_tool_rejects_out_of_range)
+工具执行层必须拒绝超出范围的参数。 ... ok
 
 ----------------------------------------------------------------------
-Ran 35 tests in 4.163s
+Ran 35 tests in 4.280s
 
 OK
